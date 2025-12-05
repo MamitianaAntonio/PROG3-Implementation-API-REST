@@ -2,7 +2,7 @@
 CREATE TABLE Product (
     id INT PRIMARY KEY,
     name VARCHAR(255),
-    price INT,
+    price NUMERIC(10,2),
     creation_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
