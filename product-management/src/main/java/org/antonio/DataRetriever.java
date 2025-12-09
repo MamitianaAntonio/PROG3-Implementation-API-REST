@@ -9,10 +9,11 @@ public class DataRetriever {
   // code to get all categories
   public List<Category> getAllCategories() throws SQLException {
     List<Category> categories = new ArrayList<>();
-    String sql = "SELECT id, name FROM Product_category";
+    StringBuilder sql = new StringBuilder();
+    sql.append("SELECT id, name FROM Product_category");
 
     try (Connection connection = DBConnection.getConnection();
-         PreparedStatement statement = connection.prepareStatement(sql);
+         PreparedStatement statement = connection.prepareStatement(sql.toString());
          ResultSet resultSet = statement.executeQuery()) {
 
       while(resultSet.next()) {
@@ -30,20 +31,21 @@ public class DataRetriever {
   List<Product> getProductList(int page, int size) throws SQLException {
     List<Product> products = new ArrayList<>();
     int offset = (page - 1) * size;
-    String sql = """
-        SELECT  p.id AS product_id,
-            p.name AS product_name,
-            p.creation_datetime,
-            c.id AS category_id,
-            c.name AS category_name
-        FROM Product p
-        LEFT JOIN Product_category c ON c.product_id = p.id
-        ORDER BY p.id
-        LIMIT ? OFFSET ?;
-        """;
+    StringBuilder sql = new StringBuilder();
+
+    sql.append("""
+      SELECT p.id AS product_id,
+             p.name AS product_name,
+             p.creation_datetime,
+             c.id AS category_id,
+             c.name AS category_name
+      FROM Product p
+      LEFT JOIN Product_category c ON c.product_id = p.id
+      WHERE 1=1
+    """);
 
       try (Connection connection = DBConnection.getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql)) {
+        PreparedStatement statement = connection.prepareStatement(sql.toString())) {
         statement.setInt(1, size);
         statement.setInt(2, offset);
 
@@ -91,12 +93,12 @@ public class DataRetriever {
 
     if (productName != null && !productName.isEmpty()) {
       sql.append(" AND p.name ILIKE ?");
-      params.add(productName.trim());
+      params.add("%" + productName.trim() + "%");
     }
 
     if (categoryName != null && !categoryName.isEmpty()) {
       sql.append(" AND c.name ILIKE ?");
-      params.add(categoryName.trim());
+      params.add("%" + categoryName.trim() + "%");
     }
 
     if (creationMin != null) {
