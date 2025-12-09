@@ -1,6 +1,7 @@
 package org.antonio;
 
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 
 public class Main {
@@ -8,8 +9,9 @@ public class Main {
     DataRetriever dataRetriever = new DataRetriever();
 
     try{
-      testGetAllCategories(dataRetriever);
-      testGetProductList(dataRetriever);
+      //testGetAllCategories(dataRetriever);
+      //testGetProductList(dataRetriever);
+      testCriteria(dataRetriever);
     } catch (SQLException e) {
       handleError(e);
     }
@@ -36,6 +38,41 @@ public class Main {
       for (Product product : products) {
         System.out.println("ID : " + product.getId() + ", Name : " + product.getName() + ", Creation date : " +
             product.getCreationDatetime() + ", Category : " + product.getCategory());
+      }
+    }
+  }
+
+  private static void testCriteria (DataRetriever dataRetriever) throws SQLException {
+    String[][] tests = {
+        {"Dell", null, null, null},
+        {null, "info", null, null},
+        {"iPhone", "mobile", null, null},
+        {null, null, "2024-02-01", "2024-03-01"},
+        {"Samsung", "bureau", null, null},
+        {"Sony", "informatique", null, null},
+        {null, "audio", "2024-01-01", "2024-12-01"},
+        {null, null, null, null}
+    };
+
+    for (String[] test : tests) {
+      String productName = test[0];
+      String categoryName = test[1];
+      String minDate = test[2];
+      String maxDate = test[3];
+
+      Instant creationMin = minDate != null ? Instant.parse(minDate + "T00:00:00Z") : null;
+      Instant creationMax = maxDate != null ? Instant.parse(maxDate + "T23:59:59Z") : null;
+
+      List<Product> results = dataRetriever.getProductsByCriteria(
+          productName, categoryName, creationMin, creationMax
+      );
+
+      System.out.println("Results: " + results.size());
+      if (results.size() <= 5) {
+        for (Product p : results) {
+          String category = p.getCategory() != null ? p.getCategory().getName() : "-";
+          System.out.println(" - " + p.getName() + " (" + category + ")");
+        }
       }
     }
   }
