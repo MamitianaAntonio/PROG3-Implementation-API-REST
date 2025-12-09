@@ -11,12 +11,14 @@ public class Main {
     try{
       //testGetAllCategories(dataRetriever);
       //testGetProductList(dataRetriever);
-      testCriteria(dataRetriever);
+      //testCriteriaNoPagination(dataRetriever);
+      testCriteriaWithPagination(dataRetriever);
     } catch (SQLException e) {
       handleError(e);
     }
   }
 
+  // Test : get all categories
   private static void testGetAllCategories(DataRetriever dataRetriever) throws SQLException {
     System.out.println(" -- Get all Categories Test -- ");
     List<Category> categories = dataRetriever.getAllCategories();
@@ -25,6 +27,7 @@ public class Main {
     }
   }
 
+  // Test : get all product list
   private static void testGetProductList(DataRetriever dataRetriever) throws SQLException {
     System.out.println(" -- Get all Products List -- ");
     int[][] testValue = {{1, 10}, {1, 5}, {1, 3}, {2, 2}};
@@ -42,7 +45,8 @@ public class Main {
     }
   }
 
-  private static void testCriteria (DataRetriever dataRetriever) throws SQLException {
+  // Test : criteria with no pagination
+  private static void testCriteriaNoPagination (DataRetriever dataRetriever) throws SQLException {
     String[][] tests = {
         {"Dell", null, null, null},
         {null, "info", null, null},
@@ -73,6 +77,44 @@ public class Main {
           String category = p.getCategory() != null ? p.getCategory().getName() : "-";
           System.out.println(" - " + p.getName() + " (" + category + ")");
         }
+      }
+    }
+  }
+
+  // Test : Criteria with pagination
+  private static void testCriteriaWithPagination(DataRetriever dataRetriever) throws SQLException {
+    Object[][] tests = {
+        {null, null, null, null, 1, 10},
+        {"Dell", null, null, null, 1, 5},
+        {null, "Informatique", null, null, 1, 10}
+    };
+
+    for (Object[] test : tests) {
+      String productName = (String) test[0];
+      String categoryName = (String) test[1];
+      String minDate = (String) test[2];
+      String maxDate = (String) test[3];
+      int page = (int) test[4];
+      int size = (int) test[5];
+
+      Instant creationMin = minDate != null ? Instant.parse(minDate + "T00:00:00Z") : null;
+      Instant creationMax = maxDate != null ? Instant.parse(maxDate + "T23:59:59Z") : null;
+
+      System.out.println("\nTest: product='" + productName +
+          "', category='" + categoryName +
+          "', min=" + minDate + ", max=" + maxDate +
+          ", page=" + page + ", size=" + size);
+
+      List<Product> results = dataRetriever.getProductsByCriteria(
+          productName, categoryName, creationMin, creationMax, page, size
+      );
+
+      System.out.println("Results: " + results.size() + " (max " + size + ")");
+      for (Product p : results) {
+        String category = p.getCategory() != null ? p.getCategory().getName() : "-";
+        System.out.println(" - ID: " + p.getId() +
+            ", Name: " + p.getName() +
+            ", Category: " + category);
       }
     }
   }
