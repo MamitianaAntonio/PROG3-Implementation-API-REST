@@ -41,7 +41,8 @@ public class DataRetriever {
              c.name AS category_name
       FROM Product p
       LEFT JOIN Product_category c ON c.product_id = p.id
-      WHERE 1=1
+      ORDER BY p.id, c.id
+      LIMIT ? OFFSET ?;
     """);
 
       try (Connection connection = DBConnection.getConnection();
